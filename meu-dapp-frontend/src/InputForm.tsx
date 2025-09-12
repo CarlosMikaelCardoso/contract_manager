@@ -15,12 +15,20 @@ const INPUT_BOX_ABI = [{
 const INPUT_BOX_ADDRESS = "0x59b22D57D4f067708AB0c00552767405926dc768"; // Endereço do InputBox no localhost
 
 export const InputForm = () => {
-    const [inputValue, setInputValue] = useState("");
+    const [description, setDescription] = useState("");
+    const [price, setPrice] = useState("");
     const { writeContract, isPending, error } = useWriteContract();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleCreateRental = async (e: React.FormEvent) => {
         e.preventDefault();
-        const hexInput = stringToHex(inputValue);
+        const payload = {
+            method: "create_rental",
+            data: {
+                description,
+                price: parseFloat(price)
+            }
+        };
+        const hexInput = stringToHex(JSON.stringify(payload));
 
         writeContract({
             abi: INPUT_BOX_ABI,
@@ -28,24 +36,51 @@ export const InputForm = () => {
             functionName: 'addInput',
             args: [DAPP_ADDRESS, hexInput],
         });
-        setInputValue(""); // Limpa o campo após o envio
+        setDescription(""); // Limpa o campo após o envio
+        setPrice(""); // Limpa o campo após o envio
     };
+    
+    const handleListRentals = () => {
+        const payload = {
+            method: "list_rentals",
+        };
+        const hexInput = stringToHex(JSON.stringify(payload));
+
+        writeContract({
+            abi: INPUT_BOX_ABI,
+            address: INPUT_BOX_ADDRESS,
+            functionName: 'addInput',
+            args: [DAPP_ADDRESS, hexInput],
+        });
+    }
 
     return (
         <div>
-            <h3>Enviar Mensagem para o DApp</h3>
-            <form onSubmit={handleSubmit}>
+            <h3>Criar Anúncio de Aluguel</h3>
+            <form onSubmit={handleCreateRental}>
                 <input
                     type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Digite algo..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Descrição do imóvel"
+                    required
+                />
+                <input
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="Preço do aluguel"
                     required
                 />
                 <button type="submit" disabled={isPending}>
-                    {isPending ? "Enviando..." : "Enviar"}
+                    {isPending ? "Criando..." : "Criar Anúncio"}
                 </button>
             </form>
+            <hr />
+            <h3>Ações</h3>
+            <button onClick={handleListRentals} disabled={isPending}>
+                {isPending ? "Carregando..." : "Listar Imóveis"}
+            </button>
             {error && <p>Erro: {error.message}</p>}
         </div>
     );

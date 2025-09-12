@@ -1,10 +1,12 @@
 // src/Notices.tsx
 import { useState, useEffect } from 'react';
+import { hexToString } from 'viem';
 
-// Definindo a estrutura de um Notice
+// Definindo a estrutura de um Notice com o payload decodificado opcional
 interface Notice {
     id: string;
     payload: string;
+    decodedPayload?: any;
 }
 
 // URL da API GraphQL do nó Cartesi rodando localmente
@@ -14,7 +16,6 @@ export const Notices = () => {
     const [notices, setNotices] = useState<Notice[]>([]);
 
     useEffect(() => {
-        // Função para buscar os notices
         const fetchNotices = async () => {
             const query = `{
                 notices {
@@ -27,18 +28,33 @@ export const Notices = () => {
                 }
             }`;
 
-            const response = await fetch(GRAPHQL_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query }),
-            });
-            const result = await response.json();
-            setNotices(result.data.notices.edges.map((edge: any) => edge.node));
+            try {
+                const response = await fetch(GRAPHQL_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query }),
+                });
+                const result = await response.json();
+                
+                if (result.data && result.data.notices) {
+                    const processedNotices: Notice[] = result.data.notices.edges.map((edge: any): Notice => {
+                        const node = edge.node;
+                        try {
+                            const decodedPayload = hexToString(node.payload);
+                            return { ...node, decodedPayload: JSON.parse(decodedPayload) };
+                        } catch (e) {
+                            return { ...node, decodedPayload: null }; // Retorna null se a decodificação falhar
+                        }
+                    });
+                    setNotices(processedNotices);
+                }
+            } catch (error) {
+                console.error("Erro ao buscar notices:", error);
+            }
         };
 
-        // Busca notices a cada 3 segundos
         const interval = setInterval(fetchNotices, 3000);
-        return () => clearInterval(interval); // Limpa o intervalo ao sair
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -47,7 +63,11 @@ export const Notices = () => {
             <ul>
                 {notices.map((notice) => (
                     <li key={notice.id}>
-                       Payload: {notice.payload} (Hex)
+                       {notice.decodedPayload ? (
+                           <pre>{JSON.stringify(notice.decodedPayload, null, 2)}</pre>
+                       ) : (
+                           `Payload: ${notice.payload} (Hex não decodificado)`
+                       )}
                     </li>
                 ))}
             </ul>
