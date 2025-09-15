@@ -43,6 +43,7 @@ def handle_advance(data):
                 "owner": msg_sender,
                 "description": payload["data"]["description"],
                 "price": payload["data"]["price"],
+                "comments": payload["data"]["comments"], # ✅ ADICIONADO: Guardar o comentário
                 "rented": False,
                 "rented_by": None
             }

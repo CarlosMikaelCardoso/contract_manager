@@ -1,3 +1,4 @@
+// Arquivo: meu-dapp-frontend/src/App.tsx
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { InputForm } from './InputForm';
 import { Notices } from './Notices';
@@ -9,6 +10,7 @@ import './App.css';
 
 const INSPECT_URL = "http://localhost:8080/inspect";
 
+// Interface definida localmente
 interface Rental {
     id: number;
     description: string;
@@ -16,12 +18,14 @@ interface Rental {
     owner: string;
     rented: boolean;
     rented_by?: string;
+    comments?: string;
 }
 
 function App() {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [currentView, setCurrentView] = useState<'client' | 'seller'>('client');
 
   const fetchRentals = useCallback(async () => {
       setIsLoading(true);
@@ -51,32 +55,50 @@ function App() {
     }
   }, [isConnected, fetchRentals]);
 
+  // Filtra as listas com base no usuário conectado
+  const clientRentals = rentals.filter(r => r.owner.toLowerCase() !== address?.toLowerCase());
+  const sellerRentals = rentals.filter(r => r.owner.toLowerCase() === address?.toLowerCase());
+
   return (
     <div>
-      <h1>Meu DApp Cartesi - Mercado de Aluguéis</h1>
+      <h1>Mercado de Aluguéis</h1>
       <ConnectButton />
       <hr />
       {isConnected && (
         <>
+          <div className="view-selector">
+            <button onClick={() => setCurrentView('client')} disabled={currentView === 'client'}>
+              Visão do Cliente
+            </button>
+            <button onClick={() => setCurrentView('seller')} disabled={currentView === 'seller'}>
+              Visão do Vendedor
+            </button>
+          </div>
+
           <div className="layout-container">
-            <div className="panel">
-              <h2>Área do Cliente</h2>
-              <p>Veja os imóveis disponíveis para alugar.</p>
-              <button onClick={fetchRentals} disabled={isLoading}>
-                  {isLoading ? 'Atualizando...' : 'Atualizar Lista (Grátis)'}
-              </button>
-              <RentalList rentals={rentals} />
-            </div>
-            <div className="panel">
-              <h2>Área do Vendedor</h2>
-              <p>Anuncie seu imóvel na plataforma.</p>
-              <InputForm />
-              <h3 style={{marginTop: '20px'}}>Imóveis Anunciados</h3>
-              <button onClick={fetchRentals} disabled={isLoading}>
-                  {isLoading ? 'Atualizando...' : 'Atualizar Lista (Grátis)'}
-              </button>
-              <RentalList rentals={rentals} />
-            </div>
+            {currentView === 'client' ? (
+              // Painel do Cliente
+              <div className="panel">
+                <h2>Área do Cliente</h2>
+                <p>Veja os imóveis disponíveis para alugar.</p>
+                <button onClick={fetchRentals} disabled={isLoading}>
+                    {isLoading ? 'Atualizando...' : 'Atualizar Lista (Grátis)'}
+                </button>
+                <RentalList rentals={clientRentals} />
+              </div>
+            ) : (
+              // Painel do Vendedor
+              <div className="panel">
+                <h2>Área do Vendedor</h2>
+                <p>Anuncie seu imóvel na plataforma.</p>
+                <InputForm />
+                <h3 style={{marginTop: '20px'}}>Imóveis Anunciados</h3>
+                <button onClick={fetchRentals} disabled={isLoading}>
+                    {isLoading ? 'Atualizando...' : 'Atualizar Lista (Grátis)'}
+                </button>
+                <RentalList rentals={sellerRentals} />
+              </div>
+            )}
           </div>
           <hr />
           <Notices onNewNotice={fetchRentals} />

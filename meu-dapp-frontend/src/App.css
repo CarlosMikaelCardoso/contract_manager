@@ -1,17 +1,14 @@
-/* Adicione este código ao final do seu arquivo App.css */
-
-.layout-container {
+/* Adicione ao final de meu-dapp-frontend/src/App.css */
+.view-selector {
+  margin-bottom: 20px;
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  gap: 20px; /* Espaçamento entre as colunas */
-  width: 100%;
+  gap: 10px;
+  justify-content: center;
 }
 
-.panel {
-  flex: 1; /* Faz com que cada coluna ocupe metade do espaço */
-  padding: 20px;
-  border: 1px solid #444;
-  border-radius: 8px;
-  background-color: #2a2a2a;
+.view-selector button:disabled {
+  background-color: #646cff;
+  color: white;
+  border-color: #646cff;
+  cursor: default;
 }
