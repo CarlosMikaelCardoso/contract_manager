@@ -1,9 +1,9 @@
-// Arquivo: src/RentalList.tsx
+// src/RentalList.tsx
 
-import { useWriteContract } from 'wagmi';
+import { useWriteContract, useAccount } from 'wagmi';
 import { stringToHex, type Address } from 'viem';
 
-// Interfaces para tipar os dados dos imóveis
+// Interface para tipar os dados dos imóveis
 interface Rental {
     id: number;
     description: string;
@@ -17,7 +17,7 @@ interface RentalListProps {
     rentals: Rental[];
 }
 
-// Endereços e ABIs (repetidos para o componente ser autônomo)
+// Endereços e ABIs
 const DAPP_ADDRESS: Address = "0xab7528bb862fB57E8A2BCd567a2e929a0Be56a5e";
 const INPUT_BOX_ABI = [{
     "type": "function", "name": "addInput",
@@ -26,8 +26,10 @@ const INPUT_BOX_ABI = [{
 }];
 const INPUT_BOX_ADDRESS: Address = "0x59b22D57D4f067708AB0c00552767405926dc768";
 
+// Sub-componente para cada "card" de imóvel
 const RentalCard = ({ rental }: { rental: Rental }) => {
     const { writeContract, isPending } = useWriteContract();
+    const { address: currentUserAddress } = useAccount(); // Pega o endereço do usuário conectado
 
     const handleRent = () => {
         const payload = {
@@ -43,25 +45,39 @@ const RentalCard = ({ rental }: { rental: Rental }) => {
         });
     };
 
+    // LÓGICA DE EXIBIÇÃO CORRIGIDA
+    const renderStatus = () => {
+        // Se o imóvel já está alugado, mostra por quem.
+        if (rental.rented) {
+            return <p style={{ color: 'red' }}>Alugado por: {rental.rented_by}</p>;
+        }
+        // Se o usuário conectado for o dono do imóvel, mostra uma mensagem.
+        if (currentUserAddress && currentUserAddress.toLowerCase() === rental.owner.toLowerCase()) {
+            return <p style={{ color: 'lightblue' }}>Este é o seu imóvel.</p>;
+        }
+        // Se estiver livre e não for do usuário, mostra o botão para alugar.
+        return (
+            <button onClick={handleRent} disabled={isPending}>
+                {isPending ? 'Alugando...' : 'Alugar'}
+            </button>
+        );
+    };
+
     return (
-        <div style={{ border: '1px solid #555', borderRadius: '8px', padding: '16px', margin: '16px', backgroundColor: '#333' }}>
+        <div style={{ border: '1px solid #555', borderRadius: '8px', padding: '16px', margin: '16px 0', backgroundColor: '#333' }}>
             <h3>{rental.description}</h3>
             <p>Preço: {rental.price} ETH/mês</p>
             <p>Proprietário: {rental.owner}</p>
-            {rental.rented ? (
-                <p style={{ color: 'red' }}>Alugado por: {rental.rented_by}</p>
-            ) : (
-                <button onClick={handleRent} disabled={isPending}>
-                    {isPending ? 'Alugando...' : 'Alugar'}
-                </button>
-            )}
+            {renderStatus()}
         </div>
     );
 };
 
+
+// Componente principal que renderiza a lista de cards
 export const RentalList = ({ rentals }: RentalListProps) => {
     if (rentals.length === 0) {
-        return <p>Nenhum imóvel disponível. Clique em "Listar Imóveis" para buscar.</p>;
+        return <p>Nenhum imóvel disponível. Clique em "Atualizar Lista" para buscar.</p>;
     }
 
     return (

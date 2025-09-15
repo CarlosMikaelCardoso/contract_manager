@@ -5,6 +5,7 @@ import { useAccount } from 'wagmi';
 import { useState, useEffect, useCallback } from 'react';
 import { stringToHex, hexToString } from 'viem';
 import { RentalList } from './RentalList'; 
+import './App.css';
 
 const INSPECT_URL = "http://localhost:8080/inspect";
 
@@ -22,19 +23,13 @@ function App() {
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // CORREÇÃO: Estabiliza a função fetchRentals com useCallback e um array de dependências vazio.
-  // Isso garante que a função seja criada apenas uma vez, quebrando o loop.
   const fetchRentals = useCallback(async () => {
       setIsLoading(true);
-      console.log("Buscando lista de imóveis...");
-      
       const payload = { method: "listar_imoveis" };
       const hexPayload = stringToHex(JSON.stringify(payload));
-
       try {
           const response = await fetch(`${INSPECT_URL}/${hexPayload}`);
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          
           const result = await response.json();
           if (result.reports && result.reports.length > 0) {
               const decodedPayload = hexToString(result.reports[0].payload);
@@ -48,9 +43,8 @@ function App() {
       } finally {
           setIsLoading(false);
       }
-  }, []); // O array vazio [] é a chave para quebrar o loop.
+  }, []);
 
-  // Roda apenas uma vez quando o usuário se conecta
   useEffect(() => {
     if (isConnected) {
       fetchRentals();
@@ -59,24 +53,32 @@ function App() {
 
   return (
     <div>
-      <h1>Meu DApp Cartesi Frontend</h1>
+      <h1>Meu DApp Cartesi - Mercado de Aluguéis</h1>
       <ConnectButton />
       <hr />
       {isConnected && (
         <>
-          <InputForm />
-          <hr />
-          
-          <div style={{ margin: '20px 0' }}>
-              <h3>Ações</h3>
+          <div className="layout-container">
+            <div className="panel">
+              <h2>Área do Cliente</h2>
+              <p>Veja os imóveis disponíveis para alugar.</p>
               <button onClick={fetchRentals} disabled={isLoading}>
                   {isLoading ? 'Atualizando...' : 'Atualizar Lista (Grátis)'}
               </button>
+              <RentalList rentals={rentals} />
+            </div>
+            <div className="panel">
+              <h2>Área do Vendedor</h2>
+              <p>Anuncie seu imóvel na plataforma.</p>
+              <InputForm />
+              <h3 style={{marginTop: '20px'}}>Imóveis Anunciados</h3>
+              <button onClick={fetchRentals} disabled={isLoading}>
+                  {isLoading ? 'Atualizando...' : 'Atualizar Lista (Grátis)'}
+              </button>
+              <RentalList rentals={rentals} />
+            </div>
           </div>
-          
-          <RentalList rentals={rentals} />
           <hr />
-          
           <Notices onNewNotice={fetchRentals} />
         </>
       )}
