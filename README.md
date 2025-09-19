@@ -29,3 +29,29 @@ O backend do DApp já está configurado no diretório `dapp/`. O `Dockerfile` e 
 Abra o terminal no diretório raiz do projeto e execute o comando:
 ```bash
 cartesi build
+```
+Após o termino da execução
+```bash
+cartesi run
+```
+
+### 2. Configurar o FrontEnd
+
+O FrontEnd se encontra na pasta `contract-manager/meu-dapp-frontend`.
+
+#### 2.1 Instalação de dependêcias
+Na pasta meu-dapp-frontend excute as seguintes linhas
+```bash
+npm install
+```
+```bash
+npm run dev
+```
+Isso vai instalar as dependêcias e iniciar o app
+
+## Contato
+
+Se tiver dúvidas ou sugestões, entre em contato:
+
+- **Desenvolvedor:** Carlos Mikael Cardoso
+- **Email:** mikael.cardoso.costa13@gmail.com
