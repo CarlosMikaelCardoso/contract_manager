@@ -12,3 +12,13 @@
   border-color: #646cff;
   cursor: default;
 }
+
+/* ✅ MODIFICAÇÃO: Nova classe para centralizar todo o contêiner principal da aplicação */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}

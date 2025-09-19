@@ -5,7 +5,7 @@ import { Notices } from './Notices';
 import { useAccount } from 'wagmi';
 import { useState, useEffect, useCallback } from 'react';
 import { stringToHex, hexToString } from 'viem';
-import { RentalList } from './RentalList'; 
+import { RentalList } from './RentalList';
 import './App.css';
 
 const INSPECT_URL = "http://localhost:8080/inspect";
@@ -60,7 +60,7 @@ function App() {
   const sellerRentals = rentals.filter(r => r.owner.toLowerCase() === address?.toLowerCase());
 
   return (
-    <div>
+    <div className="app-container"> {/* ✅ MODIFICAÇÃO: Adicionada a classe `app-container` */}
       <h1>Mercado de Aluguéis</h1>
       <ConnectButton />
       <hr />

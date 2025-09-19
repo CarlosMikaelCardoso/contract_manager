@@ -22,12 +22,15 @@ a:hover {
   color: #535bf2;
 }
 
+/* Arquivo: meu-dapp-frontend/src/index.css */
 body {
   margin: 0;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  flex-direction: column; /* Adicionado para centralizar os itens verticalmente */
+  justify-content: center; /* Adicionado para centralizar os itens horizontalmente */
 }
 
 h1 {
